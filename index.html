@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGPA Calculator</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif; /* Font style */
+            margin: 20px;
+            background-color: #121212; /* Dark background */
+            color: #ffffff; /* Text color */
+        }
+        h1 {
+            text-align: center;
+            color: #b74b4b; /* Header color */
+        }
+        table {
+            margin: 20px 0;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #555; /* Table border color */
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #3f3f3f; /* Header background color */
+            color: #b74b4b; /* Header text color */
+        }
+        input[type="text"], input[type="number"], select {
+            width: 80%;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #2a2a2a; /* Input background color */
+            color: #ffffff; /* Input text color */
+            border: 1px solid #444; /* Input border color */
+            border-radius: 5px; /* Rounded corners */
+        }
+        button {
+            padding: 10px 15px;
+            margin-top: 10px;
+            background-color: #b74b4b; /* Button color */
+            color: white; /* Button text color */
+            border: none;
+            cursor: pointer;
+            border-radius: 5px; /* Rounded corners */
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #a63e3e; /* Button hover color */
+        }
+        .results {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center; /* Centered text */
+        }
+        .semester {
+            border: 1px solid #555; /* Semester border */
+            border-radius: 5px; /* Rounded corners */
+            padding: 15px; /* Padding inside the semester box */
+            margin-bottom: 20px; /* Space between semesters */
+            background-color: #1f1f1f; /* Semester background */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>SGPA Calculator</h1>
+
+    <div id="semesters-container">
+        <div class="semester" id="semester-1">
+            <h3>1-1</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Credits</th>
+                        <th>Grade</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" placeholder="Subject Name"></td>
+                        <td><input type="number" min="0" max="18"></td>
+                        <td>
+                            <select>
+                                <option value="10">A+</option>
+                                <option value="9">A</option>
+                                <option value="8">B</option>
+                                <option value="7">C</option>
+                                <option value="6">D</option>
+                                <option value="5">E</option>
+                                <option value="0">F</option>
+                            </select>
+                        </td>
+                        <td><button onclick="removeSubject(this)">Remove</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button onclick="addSubject(this)">Add Subject</button>
+            <button onclick="calculateSemesterSGPA(this)">Calculate Semester SGPA</button>
+            <div class="semester-results" id="semester-results-1"></div>
+            <button onclick="removeSemester(this)">Remove Semester</button>
+        </div>
+    </div>
+
+    <button id="add-semester-button" onclick="addSemester()">Add Semester</button>
+    <button onclick="calculateTotalCGPA()">Calculate Total CGPA</button>
+    <div class="results" id="total-results"></div>
+
+    <script>
+        let semesterCount = 1; // Track the number of semesters
+
+        // Function to add a new semester
+        function addSemester() {
+            if (semesterCount < 8) {
+                semesterCount++;
+                const semestersContainer = document.getElementById('semesters-container');
+                const newSemester = document.createElement('div');
+                newSemester.classList.add('semester');
+                newSemester.id = `semester-${semesterCount}`;
+                
+                // Determine semester name based on count
+                const semesterName = `${Math.ceil(semesterCount / 2)}-${semesterCount % 2 === 0 ? 2 : 1}`;
+                
+                newSemester.innerHTML = `
+                    <h3>${semesterName}</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Credits</th>
+                                <th>Grade</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" placeholder="Subject Name"></td>
+                                <td><input type="number" min="0" max="18"></td>
+                                <td>
+                                    <select>
+                                        <option value="10">A+</option>
+                                        <option value="9">A</option>
+                                        <option value="8">B</option>
+                                        <option value="7">C</option>
+                                        <option value="6">D</option>
+                                        <option value="5">E</option>
+                                        <option value="0">F</option>
+                                    </select>
+                                </td>
+                                <td><button onclick="removeSubject(this)">Remove</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button onclick="addSubject(this)">Add Subject</button>
+                    <button onclick="calculateSemesterSGPA(this)">Calculate Semester SGPA</button>
+                    <div class="semester-results" id="semester-results-${semesterCount}"></div>
+                    <button onclick="removeSemester(this)">Remove Semester</button>
+                `;
+                semestersContainer.appendChild(newSemester);
+                
+                // Disable the add semester button if limit is reached
+                if (semesterCount === 8) {
+                    document.getElementById('add-semester-button').disabled = true;
+                }
+            }
+        }
+
+        // Function to remove a semester
+        function removeSemester(button) {
+            const semester = button.closest('.semester');
+            semester.parentNode.removeChild(semester);
+            semesterCount--;
+
+            // Re-enable the add semester button if limit is not reached
+            if (semesterCount < 8) {
+                document.getElementById('add-semester-button').disabled = false;
+            }
+        }
+
+        // Function to add subject row
+        function addSubject(button) {
+            const semester = button.closest('.semester');
+            const tbody = semester.querySelector('tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Subject Name"></td>
+                <td><input type="number" min="0" max="18"></td>
+                <td>
+                    <select>
+                        <option value="10">A+</option>
+                        <option value="9">A</option>
+                        <option value="8">B</option>
+                        <option value="7">C</option>
+                        <option value="6">D</option>
+                        <option value="5">E</option>
+                        <option value="0">F</option>
+                    </select>
+                </td>
+                <td><button onclick="removeSubject(this)">Remove</button></td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        // Function to remove subject row
+        function removeSubject(button) {
+            const row = button.closest('tr');
+            row.parentNode.removeChild(row);
+        }
+
+        // Function to calculate semester SGPA
+        function calculateSemesterSGPA(button) {
+            const semester = button.closest('.semester');
+            const rows = semester.querySelectorAll('tbody tr');
+            let semesterCredits = 0;
+            let semesterPoints = 0;
+
+            rows.forEach(row => {
+                const credits = parseFloat(row.querySelector('input[type="number"]').value) || 0;
+                const grade = parseInt(row.querySelector('select').value) || 0;
+                semesterCredits += credits;
+                semesterPoints += credits * grade;
+            });
+
+            const semesterSGPA = semesterCredits > 0 ? (semesterPoints / semesterCredits).toFixed(2) : 0;
+            const resultsDiv = semester.querySelector('.semester-results');
+            resultsDiv.innerHTML = `Semester Credits: ${semesterCredits}, Semester SGPA: ${semesterSGPA}`;
+        }
+
+        // Function to calculate total CGPA
+        function calculateTotalCGPA() {
+            const semesters = document.querySelectorAll('.semester');
+            let totalCredits = 0;
+            let totalPoints = 0;
+
+            semesters.forEach(semester => {
+                const rows = semester.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    const credits = parseFloat(row.querySelector('input[type="number"]').value) || 0;
+                    const grade = parseInt(row.querySelector('select').value) || 0;
+                    totalCredits += credits;
+                    totalPoints += credits * grade;
+                });
+            });
+
+            const totalCGPA = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : 0;
+            const totalPercentage = (totalCGPA * 10).toFixed(2); // Assuming 10 is the maximum for A+
+            const resultsDiv = document.getElementById('total-results');
+            resultsDiv.innerHTML = `Total Credits: ${totalCredits}, Total CGPA: ${totalCGPA}, Total Percentage: ${totalPercentage}%`;
+        }
+    </script>
+</body>
+</html>
